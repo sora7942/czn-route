@@ -68,6 +68,7 @@ export const GRID = {
   colPitch: 246 / 136,    // 열 간격 ≈ 1.81u
   rowPitch: 162 / 136,    // 행 간격 ≈ 1.19u
   rowClusterTol: 0.3,     // y 클러스터링 허용오차 (u 단위)
+  colClusterTol: 0.3,     // x 클러스터링 허용오차 (u 단위)
   rowResidualMax: 0.2,    // 행 간격 대비 잔차 한계, 넘으면 추측하지 않고 경고
   pitchMismatchMax: 0.2,  // 측정 행 간격 vs 노드 크기 예측 간격 허용 차이
   colResidualMax: 0.25,   // 열 간격 대비 잔차 한계
