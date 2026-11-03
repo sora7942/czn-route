@@ -98,6 +98,7 @@ function renderShots() {
     h('img', { src: sh.url, alt: `스샷 ${i + 1}` }),
     h('div', { class: 'row' },
       h('span', {}, `스샷 ${i + 1}`),
+      h('span', { class: 'dim', title: '브라우저가 읽은 이미지 크기' }, `${sh.image.width}×${sh.image.height}`),
       h('button', { type: 'button', 'aria-label': `스샷 ${i + 1} 앞으로`, disabled: i === 0, onclick: () => moveShot(i, -1) }, '◀'),
       h('button', { type: 'button', 'aria-label': `스샷 ${i + 1} 뒤로`, disabled: i === state.shots.length - 1, onclick: () => moveShot(i, 1) }, '▶'),
       h('button', { type: 'button', 'aria-label': `스샷 ${i + 1} 삭제`, onclick: () => removeShot(i) }, '✕')))));

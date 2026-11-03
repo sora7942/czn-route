@@ -24,9 +24,37 @@ test('detectNodes: 스샷별 노드 수와 종류 분포가 프로토타입과 �
   });
 });
 
-test('recognizeSet: fixture 3장 → expected.json과 rows·columns·edges 완전 일치', () => {
-  const r = recognizeSet(set1);
-  assert.deepEqual(r.columns, expected.columns);
-  assert.deepEqual(r.edges, expected.edges);
-  assert.equal(r.rows, expected.rows);
+// 정답(<세트>.expected.json)이 있는 fixture 세트는 전부 대조한다. 세트 추가 = 스샷 + expected.json 두 종류 파일만 넣으면 됨
+const sets = fs.readdirSync(FIX).filter((f) => f.endsWith('.expected.json')).map((f) => f.replace('.expected.json', ''));
+for (const name of sets) {
+  test(`recognizeSet: ${name} → expected.json과 rows·columns·edges 완전 일치`, () => {
+    const want = JSON.parse(fs.readFileSync(new URL(`${name}.expected.json`, FIX), 'utf8'));
+    const files = fs.readdirSync(FIX).filter((f) => f.startsWith(`${name}_`) && f.endsWith('.png')).sort();
+    assert.ok(files.length, `${name}_NN.png 없음`);
+    const r = recognizeSet(files.map(load));
+    assert.deepEqual(r.columns, want.columns);
+    assert.deepEqual(r.edges, want.edges);
+    assert.equal(r.rows, want.rows);
+  });
+}
+
+// ── ⓘ 버튼 (오른쪽 위 흰 원) ──
+test('detectNodes: ⓘ 버튼을 찾고 크기가 노드 폭의 0.3~0.5배', () => {
+  for (const img of set1) {
+    const { info, u } = detectNodes(img);
+    assert.ok(info, 'ⓘ 상자');
+    const w = info.x1 - info.x0;
+    assert.ok(w / u > 0.3 && w / u < 0.5, `ⓘ 폭 ${(w / u).toFixed(2)}u`);
+  }
+});
+
+test('pc2560-run-1: ⓘ에 가려진 뱃지 자리를 표시하고, 이어붙인 결과는 열 16개·안전 구역+상점', () => {
+  const set2 = [1, 2, 3].map((i) => load(`pc2560-run-1_0${i}.png`));
+  const first = detectNodes(set2[0]);
+  assert.ok(first.info);
+  assert.equal(first.nodes.filter((n) => n.badgeHidden).length, 1, '스샷 1에서 ⓘ에 가린 칸은 맨 오른쪽 위 안전 구역 하나');
+  const r = recognizeSet(set2);
+  assert.equal(r.columns.length, 16);
+  assert.deepEqual(r.columns[6][0], { row: 0, type: 'camp', badge: 'card' });
+  assert.deepEqual(r.meta.shots.map((s) => s.colStart), [0, 5, 10]);
 });

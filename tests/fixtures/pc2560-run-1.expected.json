@@ -1,0 +1,740 @@
+{
+ "_note": "czn-route 내보내기 2026-11-03 (스샷 3장, 수정 없음)",
+ "rows": 5,
+ "columns": [
+  [
+   {
+    "row": 0,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "battle",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 1,
+    "type": "camp",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "battle",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 1,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "camp",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 1,
+    "type": "elite",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "elite",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "elite",
+    "badge": null
+   },
+   {
+    "row": 1,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "event",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 1,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "elite",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "camp",
+    "badge": "card"
+   },
+   {
+    "row": 1,
+    "type": "elite",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "battle",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 1,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "camp",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "elite",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 1,
+    "type": "compass",
+    "badge": null
+   },
+   {
+    "row": 2,
+    "type": "compass",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "compass",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "compass",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 2,
+    "type": "camp",
+    "badge": "card"
+   },
+   {
+    "row": 3,
+    "type": "battle",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 1,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 2,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "elite",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "elite",
+    "badge": null
+   },
+   {
+    "row": 1,
+    "type": "elite",
+    "badge": null
+   },
+   {
+    "row": 2,
+    "type": "elite",
+    "badge": "flame"
+   },
+   {
+    "row": 3,
+    "type": "elite",
+    "badge": "flame"
+   },
+   {
+    "row": 4,
+    "type": "battle",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 2,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 3,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "event",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 2,
+    "type": "elite",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 1,
+    "type": "battle",
+    "badge": null
+   },
+   {
+    "row": 2,
+    "type": "event",
+    "badge": null
+   },
+   {
+    "row": 4,
+    "type": "event",
+    "badge": null
+   }
+  ],
+  [
+   {
+    "row": 0,
+    "type": "camp",
+    "badge": "card"
+   },
+   {
+    "row": 1,
+    "type": "camp",
+    "badge": "card"
+   },
+   {
+    "row": 2,
+    "type": "camp",
+    "badge": "card"
+   },
+   {
+    "row": 3,
+    "type": "camp",
+    "badge": "card"
+   },
+   {
+    "row": 4,
+    "type": "camp",
+    "badge": "card"
+   }
+  ]
+ ],
+ "edges": [
+  [
+   0,
+   0,
+   0
+  ],
+  [
+   0,
+   0,
+   1
+  ],
+  [
+   0,
+   3,
+   3
+  ],
+  [
+   0,
+   4,
+   3
+  ],
+  [
+   0,
+   4,
+   4
+  ],
+  [
+   1,
+   0,
+   1
+  ],
+  [
+   1,
+   1,
+   1
+  ],
+  [
+   1,
+   3,
+   3
+  ],
+  [
+   1,
+   4,
+   4
+  ],
+  [
+   2,
+   1,
+   0
+  ],
+  [
+   2,
+   1,
+   1
+  ],
+  [
+   2,
+   1,
+   3
+  ],
+  [
+   2,
+   3,
+   3
+  ],
+  [
+   2,
+   4,
+   4
+  ],
+  [
+   3,
+   0,
+   0
+  ],
+  [
+   3,
+   1,
+   1
+  ],
+  [
+   3,
+   3,
+   3
+  ],
+  [
+   3,
+   4,
+   3
+  ],
+  [
+   3,
+   4,
+   4
+  ],
+  [
+   4,
+   0,
+   0
+  ],
+  [
+   4,
+   0,
+   1
+  ],
+  [
+   4,
+   1,
+   1
+  ],
+  [
+   4,
+   3,
+   3
+  ],
+  [
+   4,
+   3,
+   4
+  ],
+  [
+   4,
+   4,
+   4
+  ],
+  [
+   5,
+   0,
+   0
+  ],
+  [
+   5,
+   1,
+   1
+  ],
+  [
+   5,
+   3,
+   3
+  ],
+  [
+   5,
+   4,
+   3
+  ],
+  [
+   5,
+   4,
+   4
+  ],
+  [
+   6,
+   0,
+   0
+  ],
+  [
+   6,
+   1,
+   1
+  ],
+  [
+   6,
+   1,
+   3
+  ],
+  [
+   6,
+   3,
+   3
+  ],
+  [
+   6,
+   4,
+   4
+  ],
+  [
+   7,
+   0,
+   1
+  ],
+  [
+   7,
+   1,
+   1
+  ],
+  [
+   7,
+   3,
+   2
+  ],
+  [
+   7,
+   3,
+   3
+  ],
+  [
+   7,
+   3,
+   4
+  ],
+  [
+   7,
+   4,
+   4
+  ],
+  [
+   8,
+   1,
+   0
+  ],
+  [
+   8,
+   1,
+   2
+  ],
+  [
+   8,
+   2,
+   2
+  ],
+  [
+   8,
+   3,
+   3
+  ],
+  [
+   8,
+   4,
+   3
+  ],
+  [
+   9,
+   0,
+   0
+  ],
+  [
+   9,
+   0,
+   1
+  ],
+  [
+   9,
+   2,
+   2
+  ],
+  [
+   9,
+   2,
+   3
+  ],
+  [
+   9,
+   3,
+   3
+  ],
+  [
+   9,
+   3,
+   4
+  ],
+  [
+   10,
+   0,
+   0
+  ],
+  [
+   10,
+   1,
+   1
+  ],
+  [
+   10,
+   1,
+   2
+  ],
+  [
+   10,
+   2,
+   2
+  ],
+  [
+   10,
+   3,
+   3
+  ],
+  [
+   10,
+   4,
+   4
+  ],
+  [
+   11,
+   0,
+   2
+  ],
+  [
+   11,
+   1,
+   2
+  ],
+  [
+   11,
+   2,
+   2
+  ],
+  [
+   11,
+   3,
+   2
+  ],
+  [
+   11,
+   3,
+   3
+  ],
+  [
+   11,
+   4,
+   3
+  ],
+  [
+   11,
+   4,
+   4
+  ],
+  [
+   12,
+   2,
+   0
+  ],
+  [
+   12,
+   2,
+   2
+  ],
+  [
+   12,
+   3,
+   2
+  ],
+  [
+   12,
+   4,
+   2
+  ],
+  [
+   13,
+   0,
+   0
+  ],
+  [
+   13,
+   0,
+   1
+  ],
+  [
+   13,
+   2,
+   2
+  ],
+  [
+   13,
+   2,
+   4
+  ],
+  [
+   14,
+   0,
+   0
+  ],
+  [
+   14,
+   1,
+   1
+  ],
+  [
+   14,
+   1,
+   2
+  ],
+  [
+   14,
+   2,
+   2
+  ],
+  [
+   14,
+   4,
+   3
+  ],
+  [
+   14,
+   4,
+   4
+  ]
+ ]
+}

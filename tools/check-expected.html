@@ -34,7 +34,10 @@
 <section class="legend" id="legend"></section>
 <div id="shots"></div>
 
-<script>
+<script type="module">
+import { recognizeSet } from '../docs/core/recognize.js';
+import { LINE } from '../docs/core/config.js';
+
 // 샘플(sample-run-1) 전용 좌표. core가 아니라 tools용이라 픽셀 상수를 그대로 씀.
 // 노드 중심: y = 225 + 162*row, 선 끝점은 중심에서 x ±78, y +13.
 // 열 i의 x = x0 + 246*(i - c0)  (x0는 스샷 첫 열의 x)
@@ -60,71 +63,73 @@ function el(name, attrs = {}, text) {
   if (text != null) e.textContent = text;
   return e;
 }
-const colX = (shot, i) => shot.x0 + COLW * (i - shot.c0);
-const rowY = r => ROW0 + ROWH * r;
+// 스샷마다 좌표 계산을 shot.geo로 바꿀 수 있다 (인식 결과 모드는 인식기가 잡은 열 x·행 격자·u를 쓴다)
+const sampleGeo = (shot) => ({ colX: i => shot.x0 + COLW * (i - shot.c0), rowY: r => ROW0 + ROWH * r, nodeW: NODE_W, nodeH: NODE_H, edgeDx: EDGE_DX, edgeDy: EDGE_DY, k: 1, labelY: 190 });
+const colX = (shot, i) => (shot.geo ??= sampleGeo(shot)).colX(i);
+const rowY = (shot, r) => (shot.geo ??= sampleGeo(shot)).rowY(r);
 
 function nodeLabel(n) { return n.type + (n.badge ? '+' + n.badge : ''); }
 
 function drawContent(svg, data, shot, opts) {
   const { overlay } = opts;
+  const { nodeW: NODE_W, nodeH: NODE_H, edgeDx: EDGE_DX, edgeDy: EDGE_DY, k: K, labelY } = (shot.geo ??= sampleGeo(shot));
   const g = el('g');
   svg.appendChild(g);
   // 선
   for (const [c, a, b] of data.edges) {
     if (c < shot.c0 || c + 1 > shot.c1) continue;
-    const x1 = colX(shot, c) + EDGE_DX, y1 = rowY(a) + EDGE_DY;
-    const x2 = colX(shot, c + 1) - EDGE_DX, y2 = rowY(b) + EDGE_DY;
+    const x1 = colX(shot, c) + EDGE_DX, y1 = rowY(shot, a) + EDGE_DY;
+    const x2 = colX(shot, c + 1) - EDGE_DX, y2 = rowY(shot, b) + EDGE_DY;
     g.appendChild(el('line', {
       x1, y1, x2, y2,
       stroke: overlay ? '#ffe600' : '#8a96a3',
       'stroke-opacity': overlay ? 0.55 : 0.9,
-      'stroke-width': overlay ? 5 : 3,
+      'stroke-width': (overlay ? 5 : 3) * K,
     }));
     if (!overlay) {
-      g.appendChild(el('circle', { cx: x1, cy: y1, r: 5, fill: '#8a96a3' }));
-      g.appendChild(el('circle', { cx: x2, cy: y2, r: 5, fill: '#8a96a3' }));
+      g.appendChild(el('circle', { cx: x1, cy: y1, r: 5 * K, fill: '#8a96a3' }));
+      g.appendChild(el('circle', { cx: x2, cy: y2, r: 5 * K, fill: '#8a96a3' }));
     }
   }
   // 노드
   for (let c = shot.c0; c <= shot.c1; c++) {
     const x = colX(shot, c);
     for (const n of data.columns[c]) {
-      const y = rowY(n.row), t = TYPES[n.type] || { color: '#f00' };
+      const y = rowY(shot, n.row), t = TYPES[n.type] || { color: '#f00' };
       const pts = `${x},${y - NODE_H / 2} ${x + NODE_W / 2},${y} ${x},${y + NODE_H / 2} ${x - NODE_W / 2},${y}`;
       g.appendChild(el('polygon', overlay
-        ? { points: pts, fill: 'none', stroke: t.color, 'stroke-width': 6 }
-        : { points: pts, fill: t.color, 'fill-opacity': 0.85, stroke: t.color, 'stroke-width': 2 }));
+        ? { points: pts, fill: 'none', stroke: t.color, 'stroke-width': 6 * K }
+        : { points: pts, fill: t.color, 'fill-opacity': 0.85, stroke: t.color, 'stroke-width': 2 * K }));
       const label = nodeLabel(n);
       const tx = el('text', {
-        x, y: y + NODE_H / 2 + 26, 'text-anchor': 'middle', 'font-size': 26, 'font-weight': 700,
+        x, y: y + NODE_H / 2 + 26 * K, 'text-anchor': 'middle', 'font-size': 26 * K, 'font-weight': 700,
         fill: overlay ? '#fff' : 'currentColor',
-        stroke: overlay ? '#000' : 'none', 'stroke-width': overlay ? 5 : 0, 'paint-order': 'stroke',
+        stroke: overlay ? '#000' : 'none', 'stroke-width': overlay ? 5 * K : 0, 'paint-order': 'stroke',
       }, label);
       g.appendChild(tx);
-      if (n.badge) g.appendChild(el('circle', { cx: x + NODE_W / 2 - 14, cy: y - NODE_H / 2 - 8, r: 11,
+      if (n.badge) g.appendChild(el('circle', { cx: x + NODE_W / 2 - 14, cy: y - NODE_H / 2 - 8 * K, r: 11 * K,
         fill: n.badge === 'flame' ? '#b44bff' : '#ffd23f', stroke: '#000', 'stroke-width': 2 }));
     }
     // 열 번호 + 행 눈금
     g.appendChild(el('text', {
-      x, y: 190, 'text-anchor': 'middle', 'font-size': 34, 'font-weight': 800,
-      fill: overlay ? '#fff' : 'currentColor', stroke: overlay ? '#000' : 'none', 'stroke-width': overlay ? 6 : 0, 'paint-order': 'stroke',
+      x, y: labelY, 'text-anchor': 'middle', 'font-size': 34 * K, 'font-weight': 800,
+      fill: overlay ? '#fff' : 'currentColor', stroke: overlay ? '#000' : 'none', 'stroke-width': overlay ? 6 * K : 0, 'paint-order': 'stroke',
     }, 'C' + c));
   }
-  for (let r = 0; r < 5; r++) {
+  for (let r = 0; r < (shot.geo.rows ?? 5); r++) {
     g.appendChild(el('text', {
-      x: 10, y: rowY(r) + 8, 'font-size': 26, 'font-weight': 700,
-      fill: overlay ? '#fff' : 'currentColor', stroke: overlay ? '#000' : 'none', 'stroke-width': overlay ? 5 : 0, 'paint-order': 'stroke',
+      x: 10, y: rowY(shot, r) + 8 * K, 'font-size': 26 * K, 'font-weight': 700,
+      fill: overlay ? '#fff' : 'currentColor', stroke: overlay ? '#000' : 'none', 'stroke-width': overlay ? 5 * K : 0, 'paint-order': 'stroke',
     }, 'r' + r));
   }
 }
 
-function checks(data) {
+function checks(data, spec = true) {
   const out = [];
   const nodes = data.columns.reduce((s, c) => s + c.length, 0);
   const row = (label, got, want) => out.push({ ok: got === want, text: `${label}: ${got} (SPEC ${want})` });
-  row('열', data.columns.length, 16);
-  row('노드', nodes, 62);
-  row('간선', data.edges.length, 86);
+  if (spec) { row('열', data.columns.length, 16); row('노드', nodes, 62); row('간선', data.edges.length, 86); }
+  else out.push({ ok: true, text: `열 ${data.columns.length}개 · 칸 ${nodes}개 · 간선 ${data.edges.length}개 (정답 없음: SPEC 비교 생략)` });
   const has = new Set(data.columns.flatMap((c, i) => c.map(n => `${i},${n.row}`)));
   const inn = new Set(), outt = new Set(), seen = new Set(), dup = [], dangling = [];
   for (const [c, a, b] of data.edges) {
@@ -151,7 +156,7 @@ function edgeText(data) {
   return Object.keys(by).map(c => `C${c}→C${+c + 1}: ${by[c].join(', ')}`).join('\n');
 }
 
-async function main() {
+async function expectedMode() {
   const data = await (await fetch(FIX + 'sample-run-1.expected.json')).json();
 
   document.getElementById('legend').innerHTML =
@@ -194,6 +199,79 @@ async function main() {
     });
   });
 }
+
+// ── 인식 결과 모드: ?set=<세트이름> → tests/fixtures/<세트이름>_01.png … 를 recognizeSet으로 돌려 보여준다.
+// expected.json은 읽지도 쓰지도 않는다 (정답은 눈으로 대조한 뒤 수정 UI로 내보낸 파일로 만든다).
+async function loadImage(url) {
+  const res = await fetch(url);
+  if (!res.ok) return null;
+  const bmp = await createImageBitmap(await res.blob());
+  const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(bmp, 0, 0);
+  return ctx.getImageData(0, 0, c.width, c.height);
+}
+
+async function recognizedMode(name) {
+  document.querySelector('h1').textContent = `인식 결과 확인 (${name})`;
+  document.querySelector('p.muted').textContent = '인식기가 낸 결과를 스샷 위에 겹쳐 보고, 아래에 같은 결과를 다이어그램으로 그림. 틀린 곳은 "C7 행3"처럼 열·행 번호로 알려주거나 앱의 수정 UI로 고쳐 내보내기. expected.json은 만들지 않음.';
+  const files = [], images = [];
+  for (let i = 1; i <= 9; i++) {
+    const file = `${name}_${String(i).padStart(2, '0')}.png`, img = await loadImage(FIX + file).catch(() => null);
+    if (!img) break;
+    files.push(file); images.push(img);
+  }
+  if (!images.length) throw new Error(`${FIX}${name}_01.png 를 찾지 못함`);
+  const map = recognizeSet(images), { u, grid } = map.meta, k = u / NODE_W;
+  const data = { columns: map.columns, edges: map.edges };
+
+  document.getElementById('legend').innerHTML =
+    Object.values(TYPES).map(t => `<span><i style="background:${t.color}"></i>${t.name}</span>`).join('') +
+    '<span><i style="background:#b44bff;border-radius:50%"></i>flame 뱃지</span><span><i style="background:#ffd23f;border-radius:50%"></i>card 뱃지</span>';
+
+  const sum = document.getElementById('summary');
+  const warns = map.meta.warnings;
+  sum.innerHTML = '<h2>인식 결과</h2>' + checks(data, false).map(c => `<div class="${c.ok ? 'ok' : 'bad'}">${c.ok ? '✔' : '✘'} ${c.text}</div>`).join('') +
+    `<div class="${warns.length ? 'bad' : 'ok'}">${warns.length ? '✘' : '✔'} 인식 경고 ${warns.length}개${warns.length ? '<pre>' + warns.join('\n') + '</pre>' : ''}</div>`;
+  const det = document.createElement('details');
+  det.innerHTML = `<summary>열별 칸 목록과 간선</summary><pre>${data.columns.map((col, i) => `C${i}: ` + col.map(n => `r${n.row} ${nodeLabel(n)}`).join(', ')).join('\n')}\n\n${edgeText(data)}</pre>`;
+  sum.appendChild(det);
+
+  const root = document.getElementById('shots');
+  images.forEach((image, idx) => {
+    const sh = map.meta.shots[idx], c0 = sh.colStart, c1 = c0 + sh.colX.length - 1;
+    const rowY = r => grid.top + grid.pitch * r;
+    const shot = { file: files[idx], c0, c1, w: image.width, h: image.height, geo: {
+      colX: i => sh.colX[i - c0], rowY, nodeW: u, nodeH: u * 0.6, edgeDx: LINE.endDx * u, edgeDy: LINE.endDy * u, k, labelY: rowY(0) - 0.6 * grid.pitch, rows: map.rows,
+    } };
+    const sec = document.createElement('section');
+    sec.innerHTML = `<h2>스샷 ${idx + 1}: ${shot.file} — 열 C${c0}~C${c1} (${shot.w}×${shot.h})</h2>
+      <label><input type="checkbox" class="ov" checked> 겹쳐보기</label>
+      <label><input type="checkbox" class="edg" checked> 선 표시</label>`;
+    const wrap = document.createElement('div');
+    wrap.className = 'wrap';
+    const img = new Image();
+    img.src = FIX + shot.file;
+    wrap.appendChild(img);
+    const ov = el('svg', { class: 'fill', viewBox: `0 0 ${shot.w} ${shot.h}`, preserveAspectRatio: 'none' });
+    drawContent(ov, data, shot, { overlay: true });
+    wrap.appendChild(ov);
+    sec.appendChild(wrap);
+    const y0 = rowY(0) - grid.pitch;
+    const dg = el('svg', { class: 'diagram', viewBox: `0 ${y0} ${shot.w} ${grid.pitch * (map.rows + 0.8)}` });
+    drawContent(dg, data, shot, { overlay: false });
+    sec.appendChild(dg);
+    root.appendChild(sec);
+    const ovBox = sec.querySelector('.ov'), edgBox = sec.querySelector('.edg');
+    ovBox.addEventListener('change', () => { ov.style.display = ovBox.checked ? '' : 'none'; });
+    edgBox.addEventListener('change', () => { sec.querySelectorAll('line').forEach(l => { l.style.display = edgBox.checked ? '' : 'none'; }); });
+  });
+}
+
+const main = () => {
+  const name = new URLSearchParams(location.search).get('set');
+  return name ? recognizedMode(name) : expectedMode();
+};
 main().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<p class="bad">로드 실패: ${e.message}</p>`); });
 </script>
 </body>

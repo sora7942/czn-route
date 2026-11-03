@@ -81,6 +81,23 @@ export const GRID = {
   colResidualMax: 0.25,   // 열 간격 대비 잔차 한계
 };
 
+// 이어붙이기 겹침 후보 점수 (stitch.js overlapScore): 칸·간선 일치율
+export const OVERLAP = {
+  minScore: 0.75,        // 이 점수 미만이면 겹침 없음으로 보고 경고
+  margin: 0.15,          // 2등 후보가 1등 - margin 이상이면 "겹침 불확실" (후보가 하나로 정해지지 않음)
+  missingPenalty: 0.5,   // 한쪽 스샷에만 있는 칸·간선의 감점 (어둡거나 번진 칸이 빠졌을 수 있음)
+};
+
+// 오른쪽 위 ⓘ 버튼: 흰 원이라 노드 오른쪽 위 뱃지를 가린다. 흰색 연결 요소 중 정사각형·크기·채움이 맞는 것
+// (실측: 2560×1440 68px=0.40u, 1917×1078 52px=0.38u, 채움 0.66)
+export const INFO = {
+  xMinFrac: 0.85, yMaxFrac: 0.35, // 찾는 영역 (이미지 크기 비율)
+  sMax: 40, vMin: 235,            // 흰색 판정
+  sizeRange: [0.3, 0.55],         // 폭·높이, u 단위
+  aspectMax: 1.2,                 // 폭/높이가 1/aspectMax ~ aspectMax
+  fillRange: [0.5, 0.85],         // 면적/박스 (원 + 'i' 글자 구멍)
+};
+
 // 격자 정수 배수 판정용 odd 커널 변환
 export const odd = (x, min = 1) => Math.max(min, 2 * Math.floor(x / 2) + 1);
 

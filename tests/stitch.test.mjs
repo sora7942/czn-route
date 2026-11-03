@@ -97,3 +97,58 @@ test('stitch: 겹친 열의 뱃지가 스샷마다 다르면 경고', () => {
   const b = { ...B, columns: [col([1, 'battle', 'flame']), ...B.columns.slice(1)] };
   assert.ok(stitch([A, b]).warnings.some((w) => w.includes('뱃지')));
 });
+
+// ── 점수 방식 겹침 (압축·흐림 스샷에서 실제로 났던 오류를 합성 데이터로 재현) ──
+const W = 1000, shot = (columns, edges, colX, extra = {}) => ({ columns, edges, colX, width: W, ...extra });
+const X4 = shot(
+  [col([0, 'battle'], [1, 'event']), col([0, 'elite'], [1, 'camp'], [2, 'battle']), col([0, 'event'], [1, 'compass']), col([0, 'elite'], [2, 'battle'])],
+  [[0, 0, 0], [1, 0, 0], [1, 1, 1], [1, 2, 1], [2, 0, 0], [2, 1, 2]],
+  [100, 300, 450, 700]);
+
+test('stitch 점수: 겹친 3열에서 칸 하나 누락·camp↔compass 뒤바뀜이 있어도 이어붙인다', () => {
+  // Y의 앞 3열 = X의 열 1~3. 열 1의 행 2가 빠졌고, 열 2의 행 1이 camp로 읽힘
+  const Y = shot(
+    [col([0, 'elite'], [1, 'camp']), col([0, 'event'], [1, 'camp']), col([0, 'elite'], [2, 'battle']), col([1, 'event'])],
+    [[0, 0, 0], [0, 1, 1], [1, 0, 0], [1, 1, 2], [2, 1, 1]],
+    [400, 600, 800, 900]);
+  const r = stitch([X4, Y]);
+  assert.equal(r.columns.length, 5);
+  assert.deepEqual(r.columns[1].map((n) => n.row), [0, 1, 2], '한쪽에서 빠진 칸은 다른 스샷 관측으로 채운다');
+  assert.ok(!r.warnings.some((w) => w.includes('겹치는 열이 없음') || w.includes('겹침 불확실')));
+  assert.deepEqual(r.offsets, [0, 1]);
+});
+
+test('stitch 점수: 겹친 칸 종류가 다르면 가장자리에서 먼 쪽을 채택하고 경고', () => {
+  const Y = shot([col([0, 'elite'], [1, 'camp']), col([0, 'event'], [1, 'camp']), col([0, 'elite'], [2, 'battle'])], [[0, 0, 0], [0, 1, 1], [1, 0, 0], [1, 1, 2]], [400, 600, 800]);
+  const r = stitch([X4, Y]);
+  // X의 열 2는 x=450(가장자리 거리 450), Y의 열 1은 x=600(거리 400) → X 쪽(compass)
+  assert.equal(r.columns[2].find((n) => n.row === 1).type, 'compass');
+  assert.ok(r.warnings.some((w) => w.includes('종류가 스샷마다 다름')));
+  const Y2 = { ...Y, colX: [400, 520, 800] };  // Y의 열 1이 가장자리에서 더 먼(480 > 450) → Y 쪽(camp)
+  assert.equal(stitch([X4, Y2]).columns[2].find((n) => n.row === 1).type, 'camp');
+});
+
+test('stitch 점수: 후보가 하나로 정해지지 않으면 "겹침 불확실" 경고', () => {
+  // 모든 열이 같은 모양이라 k=2도 k=3도 똑같이 잘 맞음
+  const same = () => col([0, 'battle']);
+  const e = [[0, 0, 0], [1, 0, 0]];
+  const r = stitch([{ columns: [same(), same(), same()], edges: e }, { columns: [same(), same(), same()], edges: e }]);
+  assert.ok(r.warnings.some((w) => w.includes('겹침 불확실') && w.includes('다른 후보')));
+});
+
+test('stitch 뱃지: ⓘ에 가려진 쪽은 판단에서 빼고, 보이는 쪽을 채택 (경고 없음)', () => {
+  const a = { columns: [col([0, 'camp']), col([0, 'elite'])], edges: [[0, 0, 0]] };
+  a.columns[1][0].badgeHidden = true;           // 스샷 1: 맨 오른쪽 열, 뱃지 자리가 ⓘ에 가려짐
+  const b = { columns: [col([0, 'camp']), col([0, 'elite', 'card'])], edges: [[0, 0, 0]] };
+  const r = stitch([a, b]);
+  assert.equal(r.columns[1][0].badge, 'card');
+  assert.ok(!r.warnings.some((w) => w.includes('뱃지')));
+  assert.ok(!('badgeHidden' in r.columns[1][0]), '내부 필드는 결과에 남기지 않는다');
+});
+
+test('stitch 뱃지: 모든 관측에서 가려졌으면 추측하지 않고 경고', () => {
+  const hid = () => { const c = col([0, 'camp']); c[0].badgeHidden = true; return c; };
+  const r = stitch([{ columns: [col([0, 'battle']), hid()], edges: [[0, 0, 0]] }, { columns: [col([0, 'battle']), hid()], edges: [[0, 0, 0]] }]);
+  assert.equal(r.columns[1][0].badge, null);
+  assert.ok(r.warnings.some((w) => w.includes('ⓘ에 가려져')));
+});

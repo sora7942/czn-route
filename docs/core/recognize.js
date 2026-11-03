@@ -1,7 +1,7 @@
 // 스샷 → 노드·연결선 인식. DOM 의존 없음. 길이 상수는 전부 config.js의 u(노드 폭) 비율.
 // 행 번호는 세트 전체의 y로 정하므로 detectNodes는 픽셀 y만 돌려주고, recognizeSet이 이어서 처리한다.
 import {
-  MASK_TYPES, NODE_TYPES, MASK, NODE, REGION, WHITE, BADGES, BADGE_ORDER, BADGE_MIN_FRAC, LINE, odd,
+  MASK_TYPES, NODE_TYPES, MASK, NODE, REGION, WHITE, BADGES, BADGE_ORDER, BADGE_MIN_FRAC, LINE, INFO, odd,
 } from './config.js';
 import {
   rgbaToHsv, toGray, hueMask, hueDist, close, connectedComponents, tophat, countIn,
@@ -30,7 +30,21 @@ function estimateU(comps, W, H) {
   return ws.length ? median(ws) : 0;
 }
 
-// 스샷 1장 → {nodes: [{x,y,type,badge}], clipped: {left, right}, u, warnings}
+// 오른쪽 위 ⓘ 버튼 상자 {x0,x1,y0,y1} 또는 null. 흰 연결 요소 중 정사각형·크기(u 비율)·채움이 맞는 것
+function findInfoButton(hsv, W, H, u) {
+  const m = new Uint8Array(W * H), x0 = Math.floor(INFO.xMinFrac * W), y1 = Math.floor(INFO.yMaxFrac * H);
+  for (let y = 0; y < y1; y++) for (let x = x0; x < W; x++) { const i = y * W + x; if (hsv.S[i] < INFO.sMax && hsv.V[i] > INFO.vMin) m[i] = 1; }
+  const [lo, hi] = INFO.sizeRange;
+  const hit = connectedComponents(m, W, H).filter((c) => {
+    const fill = c.area / (c.w * c.h), asp = c.w / c.h;
+    return c.w >= lo * u && c.w <= hi * u && c.h >= lo * u && c.h <= hi * u && asp <= INFO.aspectMax && asp >= 1 / INFO.aspectMax
+      && fill >= INFO.fillRange[0] && fill <= INFO.fillRange[1];
+  }).sort((a, b) => b.area - a.area)[0];
+  return hit ? { x0: hit.x, x1: hit.x + hit.w, y0: hit.y, y1: hit.y + hit.h } : null;
+}
+
+// 스샷 1장 → {nodes: [{x,y,type,badge,badgeHidden}], clipped: {left, right}, info, u, warnings}
+// badgeHidden: 뱃지가 안 보이는데 뱃지 자리가 ⓘ에 가려져 있음 (없는 게 아니라 모름)
 // y는 픽셀 값 (행 배정은 세트 단위). 잘린 열은 버리되 (y, 종류)만 clipped에 기록 (이어붙이기 보조 근거)
 export function detectNodes(img) {
   const { width: W, height: H } = img, warnings = [];
@@ -43,7 +57,7 @@ export function detectNodes(img) {
   const k2 = odd(px(NODE.closeK * u));
   if (k2 !== k) { k = k2; comps = components(hsv, k); u = estimateU(comps, W, H) || u; }
 
-  const margin = NODE.edgeMargin * u;
+  const info = findInfoButton(hsv, W, H, u), margin = NODE.edgeMargin * u;
   const nodes = [], clipped = { left: [], right: [] };
   for (const c of comps) {
     const cx = Math.floor(c.x + c.w / 2), cy = Math.floor(c.y + c.h / 2);
@@ -59,13 +73,15 @@ export function detectNodes(img) {
           (i) => hsv.S[i] < WHITE.sMax && hsv.V[i] > WHITE.vMin);
         if (r.count / r.area < WHITE.campFrac) type = 'compass';
       }
-      nodes.push({ x: cx, y: cy, type, badge: badgeOf(hsv, cx, cy, u) });
+      const badge = badgeOf(hsv, cx, cy, u), [bx0, bx1, by0, by1] = REGION.badge;
+      const hidden = !badge && !!info && cx + bx0 * u < info.x1 && cx + bx1 * u > info.x0 && cy + by0 * u < info.y1 && cy + by1 * u > info.y0;
+      nodes.push({ x: cx, y: cy, type, badge, ...(hidden && { badgeHidden: true }) });
     } else if (!inside && heightOk && c.w >= NODE.clippedWidthMin * u && c.area >= NODE.clippedAreaMin * u * u) {
       // 화면 끝에 걸쳐 잘린 열: 버리되 (y, 종류)만 기록. 일부만 보여 종류는 색 마스크 기준 그대로
       (cx < W / 2 ? clipped.left : clipped.right).push({ y: cy, type: c.type });
     }
   }
-  return { nodes, clipped, u, warnings, width: W, height: H };
+  return { nodes, clipped, info, u, warnings, width: W, height: H };
 }
 
 function badgeOf(hsv, cx, cy, u) {
@@ -129,17 +145,18 @@ export function recognizeSet(images) {
     const g = groupColumns(d.nodes, d.u);
     warnings.push(...g.warnings.map((w) => `스샷 ${si + 1}: ${w}`));
     const columns = g.columns.map((c) => {
-      const cells = c.nodes.map((n) => ({ row: rowOf(n.y), type: n.type, badge: n.badge }));
+      const cells = c.nodes.map((n) => ({ row: rowOf(n.y), type: n.type, badge: n.badge, ...(n.badgeHidden && { badgeHidden: true }) }));
       if (new Set(cells.map((n) => n.row)).size !== cells.length) warnings.push(`스샷 ${si + 1}: x=${c.x.toFixed(0)}px 열에 같은 행으로 배정된 노드가 있음`);
       return cells;
     });
     const th = tophatOf(images[si], d.u);
     const edges = detectEdges(th, d.width, d.height, g.columns.map((c, i) => ({ x: c.x, rows: columns[i].map((n) => n.row) })), grid, d.u);
     const clip = (list) => list.map((n) => ({ row: rowOf(n.y), type: n.type }));
-    parts.push({ columns, edges, clippedLeft: clip(d.clipped.left), clippedRight: clip(d.clipped.right) });
+    parts.push({ columns, edges, colX: g.columns.map((c) => c.x), width: d.width, clippedLeft: clip(d.clipped.left), clippedRight: clip(d.clipped.right) });
     shots.push({ u: d.u, width: d.width, height: d.height, colX: g.columns.map((c) => c.x), nodes: d.nodes.length });
   });
   const out = stitch(parts);
   warnings.push(...out.warnings);
+  shots.forEach((sh, i) => { sh.colStart = out.offsets[i]; });
   return { rows: out.rows, columns: out.columns, edges: out.edges, meta: { warnings, u: uSet, grid, shots } };
 }
