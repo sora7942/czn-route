@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>expected.json 확인</title>
+<style>
+  :root { --bg:#f6f7f9; --fg:#1b1f24; --muted:#5c6670; --card:#fff; --line:#d5dae0; --warn:#c62828; --ok:#1b7f3b; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14181d; --fg:#e6e9ed; --muted:#9aa5b1; --card:#1d2329; --line:#323a43; --warn:#ff6b6b; --ok:#5fd68a; }
+  }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:14px/1.5 system-ui, sans-serif; }
+  h1 { font-size:18px; margin:0 0 8px; }
+  h2 { font-size:15px; margin:0 0 8px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px; margin:0 0 16px; }
+  .muted { color:var(--muted); }
+  .ok { color:var(--ok); } .bad { color:var(--warn); font-weight:600; }
+  .wrap { position:relative; line-height:0; }
+  .wrap img, .wrap svg.fill { width:100%; height:auto; display:block; }
+  .wrap svg.fill { position:absolute; inset:0; height:100%; }
+  svg.diagram { width:100%; height:auto; display:block; background:var(--bg); border:1px solid var(--line); border-radius:4px; margin-top:8px; }
+  label { margin-right:16px; user-select:none; }
+  details { margin-top:8px; } summary { cursor:pointer; }
+  pre { margin:8px 0 0; white-space:pre-wrap; font-size:12px; }
+  .legend span { display:inline-block; margin-right:12px; }
+  .legend i { display:inline-block; width:12px; height:12px; border-radius:2px; vertical-align:-1px; margin-right:4px; }
+</style>
+</head>
+<body>
+<h1>expected.json 확인 (0단계)</h1>
+<p class="muted">스샷 위 겹쳐보기와, JSON만으로 그린 다이어그램을 같은 가로 스케일로 위아래에 둠. 열 C5·C11은 두 스샷에 모두 나옴.<br>
+틀린 곳은 "C7 행3"처럼 열·행 번호로 알려주면 됨. 인식기와 무관하게 expected.json만 읽음.</p>
+<section id="summary"></section>
+<section class="legend" id="legend"></section>
+<div id="shots"></div>
+
+<script>
+// 샘플(sample-run-1) 전용 좌표. core가 아니라 tools용이라 픽셀 상수를 그대로 씀.
+// 노드 중심: y = 225 + 162*row, 선 끝점은 중심에서 x ±78, y +13.
+// 열 i의 x = x0 + 246*(i - c0)  (x0는 스샷 첫 열의 x)
+const ROW0 = 225, ROWH = 162, COLW = 246, EDGE_DX = 78, EDGE_DY = 13, NODE_W = 136, NODE_H = 85;
+const SHOTS = [
+  { file: 'sample-run-1_01.png', c0: 0,  c1: 5,  x0: 506, w: 1917, h: 1078 },
+  { file: 'sample-run-1_02.png', c0: 5,  c1: 11, x0: 146, w: 1917, h: 1078 },
+  { file: 'sample-run-1_03.png', c0: 11, c1: 15, x0: 244, w: 1917, h: 1062 },
+];
+const TYPES = {
+  battle:  { color: '#ff3d86', name: 'battle' },
+  event:   { color: '#14c4d6', name: 'event' },
+  elite:   { color: '#9b6bff', name: 'elite' },
+  camp:    { color: '#ff9a1f', name: 'camp' },
+  compass: { color: '#e6c200', name: 'compass' },
+};
+const FIX = '../tests/fixtures/';
+const NS = 'http://www.w3.org/2000/svg';
+
+function el(name, attrs = {}, text) {
+  const e = document.createElementNS(NS, name);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (text != null) e.textContent = text;
+  return e;
+}
+const colX = (shot, i) => shot.x0 + COLW * (i - shot.c0);
+const rowY = r => ROW0 + ROWH * r;
+
+function nodeLabel(n) { return n.type + (n.badge ? '+' + n.badge : ''); }
+
+function drawContent(svg, data, shot, opts) {
+  const { overlay } = opts;
+  const g = el('g');
+  svg.appendChild(g);
+  // 선
+  for (const [c, a, b] of data.edges) {
+    if (c < shot.c0 || c + 1 > shot.c1) continue;
+    const x1 = colX(shot, c) + EDGE_DX, y1 = rowY(a) + EDGE_DY;
+    const x2 = colX(shot, c + 1) - EDGE_DX, y2 = rowY(b) + EDGE_DY;
+    g.appendChild(el('line', {
+      x1, y1, x2, y2,
+      stroke: overlay ? '#ffe600' : '#8a96a3',
+      'stroke-opacity': overlay ? 0.55 : 0.9,
+      'stroke-width': overlay ? 5 : 3,
+    }));
+    if (!overlay) {
+      g.appendChild(el('circle', { cx: x1, cy: y1, r: 5, fill: '#8a96a3' }));
+      g.appendChild(el('circle', { cx: x2, cy: y2, r: 5, fill: '#8a96a3' }));
+    }
+  }
+  // 노드
+  for (let c = shot.c0; c <= shot.c1; c++) {
+    const x = colX(shot, c);
+    for (const n of data.columns[c]) {
+      const y = rowY(n.row), t = TYPES[n.type] || { color: '#f00' };
+      const pts = `${x},${y - NODE_H / 2} ${x + NODE_W / 2},${y} ${x},${y + NODE_H / 2} ${x - NODE_W / 2},${y}`;
+      g.appendChild(el('polygon', overlay
+        ? { points: pts, fill: 'none', stroke: t.color, 'stroke-width': 6 }
+        : { points: pts, fill: t.color, 'fill-opacity': 0.85, stroke: t.color, 'stroke-width': 2 }));
+      const label = nodeLabel(n);
+      const tx = el('text', {
+        x, y: y + NODE_H / 2 + 26, 'text-anchor': 'middle', 'font-size': 26, 'font-weight': 700,
+        fill: overlay ? '#fff' : 'currentColor',
+        stroke: overlay ? '#000' : 'none', 'stroke-width': overlay ? 5 : 0, 'paint-order': 'stroke',
+      }, label);
+      g.appendChild(tx);
+      if (n.badge) g.appendChild(el('circle', { cx: x + NODE_W / 2 - 14, cy: y - NODE_H / 2 - 8, r: 11,
+        fill: n.badge === 'flame' ? '#b44bff' : '#ffd23f', stroke: '#000', 'stroke-width': 2 }));
+    }
+    // 열 번호 + 행 눈금
+    g.appendChild(el('text', {
+      x, y: 190, 'text-anchor': 'middle', 'font-size': 34, 'font-weight': 800,
+      fill: overlay ? '#fff' : 'currentColor', stroke: overlay ? '#000' : 'none', 'stroke-width': overlay ? 6 : 0, 'paint-order': 'stroke',
+    }, 'C' + c));
+  }
+  for (let r = 0; r < 5; r++) {
+    g.appendChild(el('text', {
+      x: 10, y: rowY(r) + 8, 'font-size': 26, 'font-weight': 700,
+      fill: overlay ? '#fff' : 'currentColor', stroke: overlay ? '#000' : 'none', 'stroke-width': overlay ? 5 : 0, 'paint-order': 'stroke',
+    }, 'r' + r));
+  }
+}
+
+function checks(data) {
+  const out = [];
+  const nodes = data.columns.reduce((s, c) => s + c.length, 0);
+  const row = (label, got, want) => out.push({ ok: got === want, text: `${label}: ${got} (SPEC ${want})` });
+  row('열', data.columns.length, 16);
+  row('노드', nodes, 62);
+  row('간선', data.edges.length, 86);
+  const has = new Set(data.columns.flatMap((c, i) => c.map(n => `${i},${n.row}`)));
+  const inn = new Set(), outt = new Set(), seen = new Set(), dup = [], dangling = [];
+  for (const [c, a, b] of data.edges) {
+    const k = `${c},${a},${b}`;
+    if (seen.has(k)) dup.push(k); seen.add(k);
+    if (!has.has(`${c},${a}`) || !has.has(`${c + 1},${b}`)) dangling.push(k);
+    outt.add(`${c},${a}`); inn.add(`${c + 1},${b}`);
+  }
+  const last = data.columns.length - 1, orphan = [];
+  data.columns.forEach((col, i) => col.forEach(n => {
+    const k = `${i},${n.row}`;
+    if (i > 0 && !inn.has(k)) orphan.push(`C${i} 행${n.row}: 들어오는 선 없음`);
+    if (i < last && !outt.has(k)) orphan.push(`C${i} 행${n.row}: 나가는 선 없음`);
+  }));
+  out.push({ ok: !dup.length, text: `중복 간선: ${dup.length}` + (dup.length ? ' ' + dup.join(' ') : '') });
+  out.push({ ok: !dangling.length, text: `없는 노드를 가리키는 간선: ${dangling.length}` + (dangling.length ? ' ' + dangling.join(' ') : '') });
+  out.push({ ok: !orphan.length, text: `선이 끊긴 노드: ${orphan.length}` + (orphan.length ? ' — ' + orphan.join(', ') : '') });
+  return out;
+}
+
+function edgeText(data) {
+  const by = {};
+  for (const [c, a, b] of data.edges) (by[c] ||= []).push(`${a}→${b}`);
+  return Object.keys(by).map(c => `C${c}→C${+c + 1}: ${by[c].join(', ')}`).join('\n');
+}
+
+async function main() {
+  const data = await (await fetch(FIX + 'sample-run-1.expected.json')).json();
+
+  document.getElementById('legend').innerHTML =
+    Object.values(TYPES).map(t => `<span><i style="background:${t.color}"></i>${t.name}</span>`).join('') +
+    '<span><i style="background:#b44bff;border-radius:50%"></i>flame 뱃지</span><span><i style="background:#ffd23f;border-radius:50%"></i>card 뱃지</span>';
+
+  const sum = document.getElementById('summary');
+  sum.innerHTML = '<h2>자동 점검</h2>' + checks(data)
+    .map(c => `<div class="${c.ok ? 'ok' : 'bad'}">${c.ok ? '✔' : '✘'} ${c.text}</div>`).join('');
+  const det = document.createElement('details');
+  det.innerHTML = `<summary>간선 목록 (열 쌍별, 행 a→b)</summary><pre>${edgeText(data)}</pre>`;
+  sum.appendChild(det);
+
+  const root = document.getElementById('shots');
+  SHOTS.forEach((shot, idx) => {
+    const sec = document.createElement('section');
+    sec.innerHTML = `<h2>스샷 ${idx + 1}: ${shot.file} — 열 C${shot.c0}~C${shot.c1} (${shot.w}×${shot.h})</h2>
+      <label><input type="checkbox" class="ov" checked> 겹쳐보기</label>
+      <label><input type="checkbox" class="edg" checked> 선 표시</label>`;
+    const wrap = document.createElement('div');
+    wrap.className = 'wrap';
+    const img = new Image();
+    img.src = FIX + shot.file;
+    wrap.appendChild(img);
+    const ov = el('svg', { class: 'fill', viewBox: `0 0 ${shot.w} ${shot.h}`, preserveAspectRatio: 'none' });
+    drawContent(ov, data, shot, { overlay: true });
+    wrap.appendChild(ov);
+    sec.appendChild(wrap);
+
+    // JSON만으로 그린 다이어그램: 같은 x 스케일(viewBox 폭 동일), y는 노드 영역만
+    const dg = el('svg', { class: 'diagram', viewBox: `0 150 ${shot.w} 830` });
+    drawContent(dg, data, shot, { overlay: false });
+    sec.appendChild(dg);
+    root.appendChild(sec);
+
+    const ovBox = sec.querySelector('.ov'), edgBox = sec.querySelector('.edg');
+    ovBox.addEventListener('change', () => { ov.style.display = ovBox.checked ? '' : 'none'; });
+    edgBox.addEventListener('change', () => {
+      sec.querySelectorAll('line').forEach(l => { l.style.display = edgBox.checked ? '' : 'none'; });
+    });
+  });
+}
+main().catch(e => { document.body.insertAdjacentHTML('afterbegin', `<p class="bad">로드 실패: ${e.message}</p>`); });
+</script>
+</body>
+</html>
