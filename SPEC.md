@@ -112,8 +112,12 @@ czn-route/
   columns: [ [ {row: 0, type: "battle", badge: null}, ... ], ... ],  // 열 순서대로
   edges: [ [colIndex, fromRow, toRow], ... ]                          // colIndex → colIndex+1
 }
-// route() 결과
-[ { score: 6, path: [[col,row], ...], counts: {camp: 6, elite: 3, flame: 0, ...} }, ... ]  // 최대 3개
+// route() 결과: routes는 경로가 서로 다른 루트를 점수 높은 순으로 최대 3개 (동점 경로도 각각 하나로 센다)
+{
+  routes: [ { score: 6, path: [[col,row], ...], counts: {battle, event, elite, camp, compass, flame, card} }, ... ],  // 최대 3개, start 노드는 counts에서 제외
+  sameScoreCount: 8,   // 최고 점수와 같은 점수인 루트의 전체 개수 (routes에는 3개까지만)
+  noWeights: false     // true면 가중치가 전부 0이라 계산하지 않음 (routes는 빈 배열)
+}
 ```
 
 ## 10. 단계와 완료 기준

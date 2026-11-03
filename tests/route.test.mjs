@@ -40,7 +40,19 @@ test('동점이 3개 넘으면 같은 점수 루트 개수 반환', () => {
   const { routes, sameScoreCount } = route({ rows: 2, columns: full, edges }, { battle: 1 });
   assert.equal(routes.length, 3);
   assert.equal(sameScoreCount, 8);
-  assert.equal(routes[0].score, 3);
+  assert.deepEqual(routes.map(r => r.score), [3, 3, 3]);
+  assert.equal(new Set(routes.map(r => JSON.stringify(r.path))).size, 3);
+});
+
+test('상위 3개는 점수가 아니라 경로 기준: 최고 1개 + 차점 여러 개면 [최고, 차점, 차점]', () => {
+  const m = {
+    rows: 3,
+    columns: [[n(0, 'battle')], [n(0, 'elite'), n(1, 'camp'), n(2, 'camp'), n(3, 'battle')], [n(0, 'battle')]],
+    edges: [0, 1, 2, 3].flatMap(r => [[0, 0, r], [1, r, 0]]),
+  };
+  const { routes, sameScoreCount } = route(m, { elite: 2, camp: 1 });
+  assert.deepEqual(routes.map(r => r.score), [2, 1, 1]);
+  assert.equal(sameScoreCount, 1);
 });
 
 test('음수 가중치는 피한다', () => {
