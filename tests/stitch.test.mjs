@@ -65,6 +65,11 @@ test('stitch: 잘린 열이 맞으면 경고를 내린다', () => {
   assert.equal(stitch([a, b2]).warnings.length, 0);
 });
 
+test('stitch: 잘린 열에서 어두운 노드가 빠져도(부분집합) 맞는 것으로 본다', () => {
+  const a = { ...A, clippedRight: [{ row: 1, type: 'elite' }] }; // B의 겹침 다음 열은 행 0·1
+  assert.equal(stitch([a, B]).warnings.length, 0);
+});
+
 test('stitch: 잘린 열이 한쪽이라도 맞지 않으면 경고 유지', () => {
   const a = { ...A, clippedRight: [{ row: 0, type: 'event' }, { row: 1, type: 'elite' }] };
   const bad = { ...B, clippedLeft: [{ row: 0, type: 'battle' }] };

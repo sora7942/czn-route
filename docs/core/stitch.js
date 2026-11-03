@@ -71,15 +71,17 @@ export function groupColumns(nodes, u) {
 // 열 서명 (행, 종류)
 const sig = (col) => col.map((n) => `${n.row}:${n.type}`).sort().join(',');
 // 잘린 열 서명 (행, 색 계열). camp/compass는 일부만 보여 못 가르므로 같은 계열
-const clipSig = (col) => col.map((n) => `${n.row}:${TYPE_FAMILY[n.type] ?? n.type}`).sort().join(',');
+const clipKeys = (col) => col.map((n) => `${n.row}:${TYPE_FAMILY[n.type] ?? n.type}`);
+// 잘린 열은 어두운 노드가 빠질 수 있어서, 검출된 것이 모두 대상 열에 (행, 계열)로 있으면 맞는 것으로 본다
+const clipMatches = (clip, col) => { const want = new Set(clipKeys(col)); return clipKeys(clip).every((k) => want.has(k)); };
 
 // 앞 스샷 오른쪽 잘린 열 == 다음 스샷의 겹침 바로 다음 열, 다음 스샷 왼쪽 잘린 열 == 앞 스샷의 겹침 바로 앞 열.
 // 근거가 있는 쪽이 모두 맞으면 true, 하나라도 틀리면 false, 근거가 아예 없으면 null
 function clippedEvidence(prevCols, prev, next, k) {
   const checks = [];
   const after = next.columns[k], before = prevCols[prevCols.length - k - 1];
-  if (prev.clippedRight?.length && after) checks.push(clipSig(prev.clippedRight) === clipSig(after));
-  if (next.clippedLeft?.length && before) checks.push(clipSig(next.clippedLeft) === clipSig(before));
+  if (prev.clippedRight?.length && after) checks.push(clipMatches(prev.clippedRight, after));
+  if (next.clippedLeft?.length && before) checks.push(clipMatches(next.clippedLeft, before));
   return checks.length ? checks.every(Boolean) : null;
 }
 
