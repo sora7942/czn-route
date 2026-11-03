@@ -10,6 +10,7 @@ export function layoutMap(map) {
   const colX = (c) => (DIAGRAM.padLeft + 0.5 + c * GRID.colPitch) * U;
   const rowY = (r) => (DIAGRAM.padTop + 0.5 + r * GRID.rowPitch) * U;
   const last = columns.length - 1;
+  const hitW = Math.max(w, DIAGRAM.tapMin), hitH = Math.max(h, DIAGRAM.tapMin);   // 탭 영역은 마름모보다 넉넉하게
 
   const hasIn = new Set(edges.map(([c, , b]) => `${c + 1},${b}`));
   const hasOut = new Set(edges.map(([c, a]) => `${c},${a}`));
@@ -24,8 +25,12 @@ export function layoutMap(map) {
   const lines = edges.filter(([c, a, b]) => has.has(`${c},${a}`) && has.has(`${c + 1},${b}`))
     .map(([c, a, b]) => ({ col: c, from: a, to: b, x1: colX(c) + w / 2, y1: rowY(a), x2: colX(c + 1) - w / 2, y2: rowY(b) }));
 
+  // 칸 수정 모드에서 새 칸을 놓을 수 있는 빈 자리 (열 × 인식된 행 수)
+  const emptySlots = columns.flatMap((col, c) => Array.from({ length: rows }, (_, r) => r)
+    .filter((r) => !has.has(`${c},${r}`)).map((r) => ({ col: c, row: r, x: colX(c), y: rowY(r) })));
+
   return {
-    nodeW: w, nodeH: h, nodes, edges: lines,
+    nodeW: w, nodeH: h, hitW, hitH, nodes, edges: lines, emptySlots,
     colLabels: columns.map((_, c) => ({ col: c, x: colX(c), y: DIAGRAM.padTop * U * 0.5 })),
     rowLabels: Array.from({ length: rows }, (_, r) => ({ row: r, x: DIAGRAM.padLeft * U * 0.4, y: rowY(r) })),
     width: colX(Math.max(last, 0)) + (0.5 + DIAGRAM.padRight) * U,

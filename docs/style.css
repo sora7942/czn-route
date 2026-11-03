@@ -90,3 +90,31 @@ details { margin-top: 10px; font-size: .9rem; color: var(--muted); }
   #thumbs li { width: calc(50% - 5px); }
   .w { grid-template-columns: 1fr 90px 2ch; }
 }
+
+/* ── 맵 수정 도구 (4단계) ── */
+#tools { margin-bottom: 10px; }
+#tools .bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+#tools .modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; flex: 1 1 100%; }
+#tools button { min-height: 44px; }   /* 손가락으로 누르기 쉽게 */
+#tools .modes button { min-width: 0; padding-inline: 4px; white-space: nowrap; }
+#tools button[aria-pressed=true] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+#tools .acts { display: flex; gap: 6px; }
+#tools button:disabled { opacity: .45; cursor: default; }
+#tools .hint, #tools .msg { margin: 8px 0 0; font-size: .9rem; }
+#tools .msg { min-height: 1.4em; color: var(--accent); }
+.editwarn { margin: 8px 0 0; font-size: .85rem; color: var(--muted); }
+.editwarn.on { background: var(--warn-bg); color: var(--warn-text); border-left: 4px solid var(--warn-line); padding: 6px 10px; border-radius: 4px; }
+.editor { margin-top: 10px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.editor p { margin: 8px 0 4px; font-size: .85rem; color: var(--muted); }
+.editor .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.editor button i.dia { display: inline-block; width: 11px; height: 11px; margin-right: 6px; transform: rotate(45deg) scale(.8); vertical-align: -1px; }
+.editor button.danger { color: var(--bad); border-color: var(--bad); }
+
+#diagram .hit { fill: transparent; stroke: none; }   /* 탭 영역 (≥44px) */
+#diagram .mark { pointer-events: none; }
+#diagram.mode-node .node, #diagram.mode-edge .node, #diagram.mode-start .node, #diagram .slot { cursor: pointer; }
+#diagram .node.sel polygon { stroke: var(--accent); stroke-width: 5; }
+#diagram .node.start polygon { stroke: var(--route); stroke-width: 5; stroke-dasharray: 5 3; }
+#diagram .slot polygon { fill: transparent; stroke: var(--edge); stroke-width: 1.5; stroke-dasharray: 4 4; }
+#diagram .slot.sel polygon { stroke: var(--accent); stroke-width: 4; stroke-dasharray: none; }
+#diagram.mode-node .hit, #diagram.mode-edge .hit, #diagram.mode-start .hit { outline: none; }

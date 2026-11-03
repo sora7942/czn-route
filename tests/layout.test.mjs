@@ -24,6 +24,17 @@ test('layout: 노드·선 개수와 열·행 간격, fixture에 고아 노드 �
   assert.ok(L.nodes.every((x) => x.x < L.width && x.y < L.height));
 });
 
+test('layout: 빈 자리·탭 영역 (칸 + 빈 자리 = 열 수 × 행 수, 탭 영역 ≥ 44)', () => {
+  const L = layoutMap(expected);
+  assert.equal(L.nodes.length + L.emptySlots.length, 16 * 5);
+  assert.ok(L.emptySlots.some((s) => s.col === 0 && s.row === 2));   // 열 0은 행 0·1·3만 있다
+  assert.ok(!L.emptySlots.some((s) => s.col === 0 && s.row === 0));
+  assert.ok(L.hitW >= 44 && L.hitH >= 44);
+  // 위아래 이웃 칸의 탭 영역이 서로 겹치지 않는다
+  const a = L.nodes.find((x) => x.col === 0 && x.row === 0), b = L.nodes.find((x) => x.col === 0 && x.row === 1);
+  assert.ok(b.y - a.y >= L.hitH);
+});
+
 test('layout: 들어오는/나가는 선이 없는 노드는 orphan (첫·마지막 열은 한쪽만 본다)', () => {
   const m = { rows: 2, columns: [[n(0), n(1)], [n(0), n(1)], [n(0)]], edges: [[0, 0, 0], [0, 1, 0], [1, 0, 0]] };
   const o = layoutMap(m).nodes.filter((x) => x.orphan).map((x) => [x.col, x.row]);

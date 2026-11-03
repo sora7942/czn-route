@@ -99,4 +99,9 @@ export const SERIOUS_WARNINGS = [
 ];
 
 // 다이어그램 (SVG). unit = 노드 폭의 SVG 단위, 나머지는 unit 배수. 열·행 간격은 GRID 비율을 따른다
-export const DIAGRAM = { unit: 64, nodeH: 0.6, padLeft: 0.9, padTop: 0.9, padRight: 0.5, padBottom: 0.5 };
+// tapMin = 수정 모드에서 칸·빈 자리의 최소 탭 영역(SVG 단위 = 화면 px, 다이어그램은 1:1로 그려서). 손가락용 44px
+export const DIAGRAM = { unit: 64, nodeH: 0.6, padLeft: 0.9, padTop: 0.9, padRight: 0.5, padBottom: 0.5, tapMin: 44 };
+
+// 수정 UI
+export const EDIT_HISTORY_MAX = 30;   // 되돌리기 최대 횟수
+export const EXPORT_NAME = 'new-set.expected.json';

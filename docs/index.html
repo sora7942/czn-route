@@ -30,6 +30,19 @@
     <p id="status" role="status"></p>
     <div id="diagnosis" role="alert" hidden></div>
     <ul id="serious" class="warn serious" hidden></ul>
+    <div id="tools" role="group" aria-label="맵 수정 도구" hidden>
+      <div class="bar">
+        <div id="modes" class="modes"></div>
+        <div class="acts">
+          <button id="undo" type="button" disabled>되돌리기 (0)</button>
+          <button id="export" type="button">내보내기</button>
+        </div>
+      </div>
+      <p id="editHint" class="hint"></p>
+      <p id="editMsg" class="msg" role="status"></p>
+      <p id="editWarn" class="editwarn" hidden></p>
+      <div id="editor" class="editor" hidden></div>
+    </div>
     <div id="scroll" tabindex="0" aria-label="맵 다이어그램 (가로 스크롤)"><svg id="diagram" role="img"></svg></div>
     <ul id="legend" class="legend"></ul>
     <details id="minor" hidden><summary></summary><ul class="warn"></ul></details>
