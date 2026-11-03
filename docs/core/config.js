@@ -3,23 +3,24 @@
 // 괄호 안은 프로토타입(reference/prototype.py)의 1917×1078 원래 값.
 
 // 칸 종류: 키 → 표시 이름·다이어그램 색·기준 색상(H, OpenCV 0~179)
-// 공식 명칭을 아직 모름 → 표시 이름(name)·다이어그램 글자(glyph)는 스샷 외형 기준이고 여기서만 바꾼다
+// 표시 이름(name)은 게임 범례(reference/legend)의 공식 명칭, glyph는 다이어그램용 글자. 둘 다 여기서만 바꾼다
 export const NODE_TYPES = {
-  battle:  { name: '분홍 검',     glyph: '✕', color: '#ff3d86', hue: 167 }, // 분홍 마름모, 교차한 검
-  event:   { name: '청록 물음표', glyph: '?', color: '#14c4d6', hue: 99 },  // 청록 마름모, 물음표
-  elite:   { name: '보라 몬스터', glyph: '★', color: '#9b6bff', hue: 128 }, // 보라 마름모, 몬스터 얼굴
-  camp:    { name: '주황 모닥불', glyph: '▲', color: '#ff9a1f', hue: 14 },  // 주황 마름모, 흰 불꽃
-  compass: { name: '주황 나침반', glyph: '✦', color: '#e6c200', hue: 14 },  // camp와 같은 주황, 흰 4각 별(나침반)
+  battle:  { name: '일반 전투 구역',   glyph: '✕', color: '#ff3d86', hue: 167 }, // 분홍 마름모, 교차한 검
+  event:   { name: '미확인 구역',       glyph: '?', color: '#14c4d6', hue: 99 },  // 청록 마름모, 물음표
+  elite:   { name: '엘리트 전투 구역', glyph: '★', color: '#9b6bff', hue: 128 }, // 보라 마름모, 몬스터 얼굴
+  camp:    { name: '안전 구역',         glyph: '▲', color: '#ff9a1f', hue: 14 },  // 주황 마름모, 흰 불꽃
+  compass: { name: '웨이포인트 구역',   glyph: '✦', color: '#e6c200', hue: 14 },  // camp와 같은 주황, 흰 4각 별(나침반)
 };
 // 색 마스크로 따로 덩어리를 찾는 종류 (compass는 camp 덩어리에서 갈라짐)
 export const MASK_TYPES = ['battle', 'event', 'elite', 'camp'];
 // 가장자리에서 잘린 노드는 불꽃/나침반을 못 가르므로 색 계열로만 비교한다
 export const TYPE_FAMILY = { battle: 'battle', event: 'event', elite: 'elite', camp: 'orange', compass: 'orange' };
 
-// 뱃지: 노드 오른쪽 위에 붙는 작은 아이콘 (보라 불꽃, 노랑 카드)
+// 뱃지: 노드 오른쪽 위에 붙는 작은 아이콘. card = 범례의 '상점' 아이콘과 일치(확인).
+// flame(보라 불꽃)은 범례에 없어 공식 명칭 미확인 — 외형 이름 유지
 export const BADGES = {
   flame: { name: '보라 불꽃', color: '#b44bff', hue: 135, hueTol: 15, sMin: 80, vMin: 120 },
-  card:  { name: '노랑 카드', color: '#ffd23f', hue: 22,  hueTol: 10, sMin: 60, vMin: 150 },
+  card:  { name: '상점', color: '#ffd23f', hue: 22,  hueTol: 10, sMin: 60, vMin: 150 },
 };
 // 뱃지 판정 순서 (프로토타입: 보라 먼저, 그다음 노랑)
 export const BADGE_ORDER = ['flame', 'card'];
