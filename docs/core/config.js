@@ -3,22 +3,23 @@
 // 괄호 안은 프로토타입(reference/prototype.py)의 1917×1078 원래 값.
 
 // 칸 종류: 키 → 표시 이름·다이어그램 색·기준 색상(H, OpenCV 0~179)
-// 공식 명칭을 아직 모름 → 표시 이름은 여기서만 바꾼다
+// 공식 명칭을 아직 모름 → 표시 이름(name)·다이어그램 글자(glyph)는 스샷 외형 기준이고 여기서만 바꾼다
 export const NODE_TYPES = {
-  battle:  { name: '전투',   color: '#ff3d86', hue: 167 },
-  event:   { name: '이벤트', color: '#14c4d6', hue: 99 },
-  elite:   { name: '정예',   color: '#9b6bff', hue: 128 },
-  camp:    { name: '캠프',   color: '#ff9a1f', hue: 14 },
-  compass: { name: '나침반', color: '#e6c200', hue: 14 }, // camp와 같은 주황, 흰 픽셀 양으로 구분
+  battle:  { name: '분홍 검',     glyph: '✕', color: '#ff3d86', hue: 167 }, // 분홍 마름모, 교차한 검
+  event:   { name: '청록 물음표', glyph: '?', color: '#14c4d6', hue: 99 },  // 청록 마름모, 물음표
+  elite:   { name: '보라 몬스터', glyph: '★', color: '#9b6bff', hue: 128 }, // 보라 마름모, 몬스터 얼굴
+  camp:    { name: '주황 모닥불', glyph: '▲', color: '#ff9a1f', hue: 14 },  // 주황 마름모, 흰 불꽃
+  compass: { name: '주황 나침반', glyph: '✦', color: '#e6c200', hue: 14 },  // camp와 같은 주황, 흰 4각 별(나침반)
 };
 // 색 마스크로 따로 덩어리를 찾는 종류 (compass는 camp 덩어리에서 갈라짐)
 export const MASK_TYPES = ['battle', 'event', 'elite', 'camp'];
 // 가장자리에서 잘린 노드는 불꽃/나침반을 못 가르므로 색 계열로만 비교한다
 export const TYPE_FAMILY = { battle: 'battle', event: 'event', elite: 'elite', camp: 'orange', compass: 'orange' };
 
+// 뱃지: 노드 오른쪽 위에 붙는 작은 아이콘 (보라 불꽃, 노랑 카드)
 export const BADGES = {
-  flame: { name: '불꽃', color: '#b44bff', hue: 135, hueTol: 15, sMin: 80, vMin: 120 },
-  card:  { name: '카드', color: '#ffd23f', hue: 22,  hueTol: 10, sMin: 60, vMin: 150 },
+  flame: { name: '보라 불꽃', color: '#b44bff', hue: 135, hueTol: 15, sMin: 80, vMin: 120 },
+  card:  { name: '노랑 카드', color: '#ffd23f', hue: 22,  hueTol: 10, sMin: 60, vMin: 150 },
 };
 // 뱃지 판정 순서 (프로토타입: 보라 먼저, 그다음 노랑)
 export const BADGE_ORDER = ['flame', 'card'];
@@ -81,3 +82,20 @@ export const GRID = {
 
 // 격자 정수 배수 판정용 odd 커널 변환
 export const odd = (x, min = 1) => Math.max(min, 2 * Math.floor(x / 2) + 1);
+
+// 화면 (3단계)
+export const WEIGHT_RANGE = [-3, 3];
+export const STORAGE_KEY = 'czn-route:weights:v1';
+// 인식 경고 중 "루트가 틀릴 수 있는" 것 → 다이어그램 위에 바로 노출. 나머지는 접이식 목록.
+// 열·행 번호나 이어붙이기가 틀릴 수 있는 경고. 새 경고는 기본이 접이식이니 여기에 추가한다
+export const SERIOUS_WARNINGS = [
+  /겹치는 열이 없음/,   // 이어붙이기 실패
+  /겹침 불확실/,
+  /행 간격 .*다름/,     // 행이 빠졌거나 인식 오류
+  /빈 열 의심/,
+  /열 간격 불규칙/,
+  /노드를 찾지 못함/,   // 그 스샷은 맵에서 빠졌다
+];
+
+// 다이어그램 (SVG). unit = 노드 폭의 SVG 단위, 나머지는 unit 배수. 열·행 간격은 GRID 비율을 따른다
+export const DIAGRAM = { unit: 64, nodeH: 0.6, padLeft: 0.9, padTop: 0.9, padRight: 0.5, padBottom: 0.5 };

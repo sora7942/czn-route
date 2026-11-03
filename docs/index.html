@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>카오스 내비</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>카오스 내비</h1>
+  <p class="sub">카오스 맵 스샷 → 원하는 칸을 가장 많이 밟는 루트. 스샷은 이 브라우저 안에서만 처리돼요.</p>
+</header>
+
+<main>
+  <section id="upload" aria-labelledby="upload-h">
+    <h2 id="upload-h">1. 스샷 올리기</h2>
+    <div id="drop" tabindex="0">
+      <p><strong>Ctrl+V로 붙여넣기</strong>, 여기로 끌어놓기, 또는 파일 선택</p>
+      <label class="btn"><input id="file" type="file" accept="image/*" multiple hidden>파일 선택 (여러 장)</label>
+      <p class="hint">스샷은 <b>2열 이상 겹치게</b> 왼쪽 → 오른쪽 순서로 찍어 주세요.</p>
+    </div>
+    <ol id="thumbs" aria-label="올린 스샷 (순서대로 이어붙임)"></ol>
+  </section>
+
+  <section id="map" aria-labelledby="map-h">
+    <h2 id="map-h">2. 인식된 맵</h2>
+    <p id="status" role="status"></p>
+    <div id="diagnosis" role="alert" hidden></div>
+    <ul id="serious" class="warn serious" hidden></ul>
+    <div id="scroll" tabindex="0" aria-label="맵 다이어그램 (가로 스크롤)"><svg id="diagram" role="img"></svg></div>
+    <ul id="legend" class="legend"></ul>
+    <details id="minor" hidden><summary></summary><ul class="warn"></ul></details>
+  </section>
+
+  <section id="plan" aria-labelledby="plan-h">
+    <h2 id="plan-h">3. 가중치와 루트</h2>
+    <div id="weights"></div>
+    <div id="presets" class="presets"></div>
+    <div id="tabs" role="tablist" aria-label="상위 루트"></div>
+    <div id="routeInfo" role="tabpanel"></div>
+  </section>
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
