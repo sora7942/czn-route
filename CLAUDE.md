@@ -8,7 +8,7 @@
 - 참고 원본: `reference/prototype.py` (Python + OpenCV, 검증 완료). 실행하려면 conda env `czn` (opencv-python, numpy)
 
 ## Commands
-- 테스트: `npm test` (= `node --test tests/`)
+- 테스트: `npm test` (= `node --test`; `node --test tests/`는 디렉터리를 파일로 취급해 실패)
 - 미리보기: `python -m http.server -d docs 8000` → http://localhost:8000
 - 프로토타입 실행: `conda run --no-capture-output -n czn python reference/prototype.py tests/fixtures/sample-run-1_01.png tests/fixtures/sample-run-1_02.png tests/fixtures/sample-run-1_03.png`
 
